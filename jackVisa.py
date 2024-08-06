@@ -16,8 +16,8 @@ CHAT_ID = '-4129556338'  # Updated chat ID
 bot = Bot(token=BOT_TOKEN)
 
 def notify_user(message):
-    url_button = InlineKeyboardButton(text="Visit Website", url="https://appointment.bmeia.gv.at/?fromSpecificInfo=True")
-    stop_button = InlineKeyboardButton(text="Stop Notifications for 1 Minute", callback_data="stop_notifications")
+    url_button = InlineKeyboardButton(text="برو تو سایت", url="https://appointment.bmeia.gv.at/?fromSpecificInfo=True")
+    stop_button = InlineKeyboardButton(text="یک دقیقه خفه شو ربات آشغال", callback_data="stop_notifications")
     keyboard = [[url_button, stop_button]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
