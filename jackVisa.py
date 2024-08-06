@@ -1,6 +1,11 @@
 import requests
 import pytz
 from datetime import datetime
+import time
+import os
+
+# File to keep track of the last notification time
+LAST_NOTIFICATION_FILE = 'last_notification_time.txt'
 
 def notify_user(message):
     bot_token = '7002542991:AAHAWKTKY1aJ_gCZS8sZ6PpUrGQO2Frtsxw'
@@ -37,11 +42,13 @@ def check_appointments():
         
         if error_message not in response.text:
             print("Appointments are available!")
-            notify_user("Appointments are available!")
+            return True
         else:
             print("No appointments available.")
+            return False
     except Exception as e:
         print(f"Error: {str(e)}")
+        return False
 
 def should_send_status_update():
     # Tehran timezone
@@ -50,11 +57,31 @@ def should_send_status_update():
     current_hour = current_time.hour
 
     # Notify at 08:00, 16:00, or 00:00 Tehran time
-    return current_hour in [2, 8, 16, 0]
+    return current_hour in [0, 8, 16]
+
+def get_last_notification_time():
+    if os.path.exists(LAST_NOTIFICATION_FILE):
+        with open(LAST_NOTIFICATION_FILE, 'r') as file:
+            last_time_str = file.read().strip()
+            return datetime.fromisoformat(last_time_str)
+    return None
+
+def update_last_notification_time():
+    with open(LAST_NOTIFICATION_FILE, 'w') as file:
+        file.write(datetime.now(pytz.timezone('Asia/Tehran')).isoformat())
 
 def main():
-    check_appointments()
-    if should_send_status_update():
-        notify_user("The bot is still checking for appointments.")
+    while True:
+        current_time = datetime.now(pytz.timezone('Asia/Tehran'))
+        last_notification_time = get_last_notification_time()
+
+        if should_send_status_update():
+            if last_notification_time is None or (current_time - last_notification_time).total_seconds() >= 3600:
+                if check_appointments():
+                    notify_user("The bot is still checking for appointments.")
+                    update_last_notification_time()
+        
+        # Wait for 5 seconds before running the check again
+        time.sleep(5)
 
 main()
