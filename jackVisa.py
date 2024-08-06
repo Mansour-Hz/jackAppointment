@@ -41,11 +41,10 @@ def check_appointments():
         response = requests.post(url, data=payload)
         
         if error_message not in response.text:
-            print("Appointments are available!")
-            return True
+            notify_user("سریع نوبت رو بگیر علی")
         else:
             print("No appointments available.")
-            return False
+            
     except Exception as e:
         print(f"Error: {str(e)}")
         return False
@@ -74,12 +73,11 @@ def main():
     while True:
         current_time = datetime.now(pytz.timezone('Asia/Tehran'))
         last_notification_time = get_last_notification_time()
-
+        check_appointments()
         if should_send_status_update():
             if last_notification_time is None or (current_time - last_notification_time).total_seconds() >= 3600:
-                if check_appointments():
-                    notify_user("The bot is still checking for appointments.")
-                    update_last_notification_time()
+                notify_user("من هنوز دارم سایتو چک میکنم لاشی")
+                update_last_notification_time()
         
         # Wait for 5 seconds before running the check again
         time.sleep(5)
