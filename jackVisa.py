@@ -1,13 +1,14 @@
 import requests
 import pytz
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
 import os
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
+from telegram.ext import Updater, CallbackQueryHandler, CallbackContext
 
 # File to keep track of the last notification time
 LAST_NOTIFICATION_FILE = 'last_notification_time.txt'
+SAVED_PAGES_DIR = 'savedPages'
 
 # Configuration for the Telegram bot
 BOT_TOKEN = '7002542991:AAHAWKTKY1aJ_gCZS8sZ6PpUrGQO2Frtsxw'
@@ -15,9 +16,13 @@ CHAT_ID = '-4129556338'  # Updated chat ID
 
 bot = Bot(token=BOT_TOKEN)
 
+# Ensure savedPages directory exists
+if not os.path.exists(SAVED_PAGES_DIR):
+    os.makedirs(SAVED_PAGES_DIR)
+
 def notify_user(message):
-    url_button = InlineKeyboardButton(text="برو تو سایت", url="https://appointment.bmeia.gv.at/?fromSpecificInfo=True")
-    stop_button = InlineKeyboardButton(text="یک دقیقه خفه شو ربات آشغال", callback_data="stop_notifications")
+    url_button = InlineKeyboardButton(text="بریم تو سایت", url="https://appointment.bmeia.gv.at/?fromSpecificInfo=True")
+    stop_button = InlineKeyboardButton(text="ساکت باش ربات", callback_data="stop_notifications")
     keyboard = [[url_button, stop_button]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -26,6 +31,19 @@ def notify_user(message):
         print("Notification sent successfully!")
     except Exception as e:
         print(f"Error: {str(e)}")
+
+def save_html_page(html_content):
+    tehran_tz = pytz.timezone('Asia/Tehran')
+    current_time = datetime.now(tehran_tz)
+    filename = current_time.strftime("%Y-%m-%d_%H-%M-%S.html")
+    filepath = os.path.join(SAVED_PAGES_DIR, filename)
+    
+    try:
+        with open(filepath, 'w', encoding='utf-8') as file:
+            file.write(html_content)
+        print(f"Saved HTML page: {filename}")
+    except Exception as e:
+        print(f"Error saving HTML page: {str(e)}")
 
 def check_appointments():
     url = "https://appointment.bmeia.gv.at/?fromSpecificInfo=True"
@@ -42,8 +60,9 @@ def check_appointments():
         response = requests.post(url, data=payload)
         if error_message not in response.text:
             notify_user("سریع نوبت رو بگیر علی")
-        else:
-            print("No appointments available.")
+            save_html_page(response.text)
+        # else:
+        #     print("No appointments available.")
     except Exception as e:
         print(f"Error: {str(e)}")
 
@@ -68,7 +87,10 @@ def update_last_notification_time():
         file.write(datetime.now(pytz.timezone('Asia/Tehran')).isoformat())
 
 def stop_notifications_for_one_minute(update: Update, context: CallbackContext):
-    # Stop notifications for 1 minute
+    query = update.callback_query
+    query.answer()
+    query.edit_message_text(text="باشه داوش...")
+    # Logic to stop notifications for 1 minute
     print("Stopping notifications for 1 minute.")
     time.sleep(60)
     print("Resuming notifications.")
@@ -79,6 +101,8 @@ def main():
 
     # Add handler for stop notifications button
     dispatcher.add_handler(CallbackQueryHandler(stop_notifications_for_one_minute, pattern="stop_notifications"))
+
+    updater.start_polling()
 
     while True:
         current_time = datetime.now(pytz.timezone('Asia/Tehran'))
@@ -91,7 +115,7 @@ def main():
                 notify_user("من هنوز دارم سایتو چک میکنم لاشی")
                 update_last_notification_time()
 
-        # Wait for 5 minutes before running the check again
+        # Wait for one minute before running the check again
         time.sleep(300)
 
 if __name__ == "__main__":
