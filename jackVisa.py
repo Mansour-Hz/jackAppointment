@@ -1,28 +1,29 @@
 import requests
 import pytz
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import os
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
 
 # File to keep track of the last notification time
 LAST_NOTIFICATION_FILE = 'last_notification_time.txt'
 
+# Configuration for the Telegram bot
+BOT_TOKEN = '7002542991:AAHAWKTKY1aJ_gCZS8sZ6PpUrGQO2Frtsxw'
+CHAT_ID = '-4129556338'  # Updated chat ID
+
+bot = Bot(token=BOT_TOKEN)
+
 def notify_user(message):
-    bot_token = '7002542991:AAHAWKTKY1aJ_gCZS8sZ6PpUrGQO2Frtsxw'
-    chat_id = '-4129556338'  # Updated chat ID
-
-    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-    payload = {
-        'chat_id': chat_id,
-        'text': message
-    }
-
+    url_button = InlineKeyboardButton(text="Visit Website", url="https://appointment.bmeia.gv.at/?fromSpecificInfo=True")
+    stop_button = InlineKeyboardButton(text="Stop Notifications for 1 Minute", callback_data="stop_notifications")
+    keyboard = [[url_button, stop_button]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
     try:
-        response = requests.post(url, data=payload)
-        if response.status_code == 200:
-            print("Notification sent successfully!")
-        else:
-            print(f"Failed to send notification: {response.status_code} - {response.json()}")
+        bot.send_message(chat_id=CHAT_ID, text=message, reply_markup=reply_markup)
+        print("Notification sent successfully!")
     except Exception as e:
         print(f"Error: {str(e)}")
 
@@ -39,15 +40,12 @@ def check_appointments():
 
     try:
         response = requests.post(url, data=payload)
-        
         if error_message not in response.text:
             notify_user("سریع نوبت رو بگیر علی")
         else:
             print("No appointments available.")
-            
     except Exception as e:
         print(f"Error: {str(e)}")
-        return False
 
 def should_send_status_update():
     # Tehran timezone
@@ -69,17 +67,32 @@ def update_last_notification_time():
     with open(LAST_NOTIFICATION_FILE, 'w') as file:
         file.write(datetime.now(pytz.timezone('Asia/Tehran')).isoformat())
 
+def stop_notifications_for_one_minute(update: Update, context: CallbackContext):
+    # Stop notifications for 1 minute
+    print("Stopping notifications for 1 minute.")
+    time.sleep(60)
+    print("Resuming notifications.")
+
 def main():
+    updater = Updater(token=BOT_TOKEN, use_context=True)
+    dispatcher = updater.dispatcher
+
+    # Add handler for stop notifications button
+    dispatcher.add_handler(CallbackQueryHandler(stop_notifications_for_one_minute, pattern="stop_notifications"))
+
     while True:
         current_time = datetime.now(pytz.timezone('Asia/Tehran'))
         last_notification_time = get_last_notification_time()
+
         check_appointments()
+
         if should_send_status_update():
             if last_notification_time is None or (current_time - last_notification_time).total_seconds() >= 3600:
                 notify_user("من هنوز دارم سایتو چک میکنم لاشی")
                 update_last_notification_time()
-        
-        # Wait for 5 seconds before running the check again
-        time.sleep(5)
 
-main()
+        # Wait for 5 minutes before running the check again
+        time.sleep(300)
+
+if __name__ == "__main__":
+    main()
