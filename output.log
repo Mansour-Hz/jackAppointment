@@ -1,0 +1,7 @@
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/root/projects/jackAppointment/jackVisa.py", line 122, in <module>
+    main()
+  File "/root/projects/jackAppointment/jackVisa.py", line 99, in main
+    updater = Updater(token=BOT_TOKEN, use_context=True)
+TypeError: Updater.__init__() got an unexpected keyword argument 'token'
