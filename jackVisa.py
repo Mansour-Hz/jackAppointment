@@ -96,7 +96,7 @@ def stop_notifications_for_one_minute(update: Update, context: CallbackContext):
     print("Resuming notifications.")
 
 def main():
-    updater = Updater(token=BOT_TOKEN, use_context=True)
+    updater = Updater(bot=bot, use_context=True)
     dispatcher = updater.dispatcher
 
     # Add handler for stop notifications button
