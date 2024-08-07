@@ -54,11 +54,11 @@ def check_appointments():
         "PersonCount": "1",
         "Command": "Next"
     }
-    error_message = '<p class="message-error">For your selection there are unfortunately no appointments available</p>'
-
+    avaiSign = '<h2>Appointments available for'
+    
     try:
         response = requests.post(url, data=payload)
-        if error_message not in response.text:
+        if availSign in response.text:
             notify_user("سریع نوبت رو بگیر علی")
             save_html_page(response.text)
         # else:
