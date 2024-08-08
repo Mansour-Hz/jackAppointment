@@ -4,4 +4,4 @@ output.log
 myvenv/
 testShit/
 last_notification_time.txt
-___pycache__/
+__pycache__/
