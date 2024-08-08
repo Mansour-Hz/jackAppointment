@@ -11,11 +11,14 @@ def main():
     }
 
     available_appointments = getAppointment.check_appointments(url, payload)
-    print(available_appointments)
-    # if available_appointments != []:
 
-    #     getAppointment.chooseDate(available_appointments)
+    # print(available_appointments)
 
+    if available_appointments != []:
+
+        isAnyTime = getAppointment.chooseDate(available_appointments)
+        if isAnyTime:
+            print("Omadim Ta Inja")
 
 if __name__ == "__main__":
     main()
