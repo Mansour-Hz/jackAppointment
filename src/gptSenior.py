@@ -27,8 +27,7 @@ def notify_user(message):
                 error_message = response.json().get('description', 'No description')
             except ValueError:
                 error_message = "No detailed error message available."
-            print(f"Failed to send notification: 
-                  {response.status_code} - {error_message}")
+            print(f"Failed to send notification: {response.status_code} - {error_message}")
 
     except Exception as e:
         print(f"Error: {str(e)}")
