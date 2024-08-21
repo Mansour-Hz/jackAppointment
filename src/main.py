@@ -1,4 +1,4 @@
-import getAppointment
+import helpers as helpers
 
 def main():
     url = "https://appointment.bmeia.gv.at/?fromSpecificInfo=True"
@@ -10,13 +10,13 @@ def main():
         "Command": "Next"
     }
 
-    available_appointments = getAppointment.check_appointments(url, payload)
+    available_appointments = helpers.check_appointments(url, payload)
 
     # print(available_appointments)
 
     if available_appointments != []:
 
-        isAnyTime = getAppointment.chooseDate(available_appointments)
+        isAnyTime = helpers.chooseDate(available_appointments)
         if isAnyTime:
             print("Omadim Ta Inja")
 

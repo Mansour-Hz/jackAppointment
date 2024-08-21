@@ -2,8 +2,33 @@ import requests
 from bs4 import BeautifulSoup
 import urllib.parse
 import sys
+import keys
 
 AVAIL_SIGN = '<h2>Appointments available for'
+error_message = '<p class="message-error">For your selection there are unfortunately no appointments available</p>'
+
+
+def notify_user(message):
+
+    bot_token = keys.BOT_TOKEN
+    chat_id = keys.CHAT_ID
+
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+
+    payload = {
+        'chat_id': chat_id,
+        'text': message
+    }
+
+    try:
+        response = requests.post(url, data=payload)
+        if response.status_code == 200:
+            print("Notification sent successfully!")
+        else:
+            print("Failed to send notification: ",
+                  response.status_code,  " - ",  response.json())
+    except Exception as e:
+        print(f"Error: {str(e)}")
 
 
 def check_appointments(url, payload):
@@ -12,7 +37,7 @@ def check_appointments(url, payload):
         response.raise_for_status()  # Check if the request was successful
         response_text = response.text
 
-        if AVAIL_SIGN in response_text:
+        if AVAIL_SIGN in response_text and error_message not in response_text:
 
             # Assuming the HTML content is stored in a variable called 'html_content'
             soup = BeautifulSoup(response_text, 'html.parser')

@@ -1,7 +1,7 @@
-keys.py
+src/keys.py
 savedPages/
-output.log
+src/output.log
 myvenv/
 testShit/
-last_notification_time.txt
+src/last_notification_time.txt
 __pycache__/
