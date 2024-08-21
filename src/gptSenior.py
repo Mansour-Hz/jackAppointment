@@ -82,8 +82,7 @@ def daily_check():
 # End of day report
 def end_of_day_report():
     global successful_requests
-    report_message = f"The bot is still running. Total successful requests today: {
-        successful_requests}."
+    report_message = f"The bot is still running. Total successful requests today: {successful_requests}."
     notify_user(report_message)
     successful_requests = 0  # Reset for the next day
 
